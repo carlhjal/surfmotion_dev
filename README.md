@@ -60,10 +60,10 @@ source install/setup.bash
 Launch the path planner, the launch file will look for the virtual environment by itself..
 
 ``` bash
-ros2 launch reach_planner path_projection.launch.py
+ros2 launch path_projection path_projection.launch.py
 ```
 
-Output paths will be saved under pkg_name_share/output.
+Output paths will be saved under path_projection_share/output.
 
 ### Running the motion planner back-ends
 
