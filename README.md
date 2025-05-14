@@ -1,4 +1,4 @@
-# robotic_pipecutting
+# SurfMotion
 
 A robot-agnostic package for robotic pipe cutting and welding trajectory trialing
 
@@ -14,13 +14,13 @@ Setup a ROS workspace:
 cd ~
 mkdir -p /ws_folder/src
 cd ~/ws_folder
-git clone https://github.com/carlhjal/robotic_pipecutting.git src/robotic_pipecutting
+git clone https://github.com/carlhjal/surfmotion_dev.git src/surfmotion
 ```
 
 Install dependencies:
 
 ``` bash
-vcs import src < src/robotic_pipecutting/dependencies.repos
+vcs import src < src/surfmotion/dependencies.repos
 rosdep install --from-paths src --ignore-src -r -y
 ```
 
@@ -37,7 +37,7 @@ This can be done either with the automated script:
 
 ``` bash
 cd ~/ws_folder
-python3 src/robotic_pipecutting/setup_venv.py
+python3 src/surfmotion/setup_venv.py
 ```
 
 Or manually:
@@ -46,7 +46,7 @@ Or manually:
 cd ~/ws_folder
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r src/robotic_pipecutting/requirements.txt
+pip install -r src/surfmotion/requirements.txt
 ```
 
 ### Running the path planning script
