@@ -57,7 +57,7 @@ Make sure you have sourced the workspace build files
 source install/setup.bash
 ```
 
-Launch the path planner
+Launch the path planner, the launch file will look for the virtual environment by itself..
 
 ``` bash
 ros2 launch reach_planner path_projection.launch.py
