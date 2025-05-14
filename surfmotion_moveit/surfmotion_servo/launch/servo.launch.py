@@ -19,7 +19,7 @@ def load_yaml(file_path):
 def launch_setup(context):
     # Get the resolved path to the meta config YAML
     meta_config_rel = LaunchConfiguration("meta_config_name").perform(context)
-    package_path = get_package_share_directory("cartesian_path_waypoints")
+    package_path = get_package_share_directory("moveit_servo_example")
     meta_config_path = os.path.join(package_path, "config", meta_config_rel)
     print(meta_config_path)
 
@@ -36,9 +36,9 @@ def launch_setup(context):
 
     return [
         Node(
-            package="cartesian_path_waypoints",
-            executable="cartesian_path_node",
-            name="cartesian_path_node",
+            package="moveit_servo_example",
+            executable="servo_controller",
+            name="servo_controller",
             output="screen",
             parameters=[
                 moveit_config.to_dict(),
