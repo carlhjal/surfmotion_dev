@@ -13,6 +13,8 @@
 #include "geometry_msgs/msg/pose.hpp"
 #include "moveit/move_group_interface/move_group_interface.h"
 #include "trajectory_seed_generator/seed_gen.hpp"
+#include <filesystem>
+#include "ament_index_cpp/get_package_share_directory.hpp"
 
 std::vector<geometry_msgs::msg::Pose> poses_from_json(const std::string& filename) {
     std::vector<geometry_msgs::msg::Pose> poses;
@@ -65,7 +67,7 @@ std::unordered_map<std::string, double> joint_state_from_json(const std::string&
 using namespace std::chrono_literals;
 
 int main(int argc, char * argv[]) { 
-    std::string poses_filename = "/home/carl/thesis/install/reach_planner/share/reach_planner/output/poses.json";
+    std::string poses_filename = std::filesystem::path(ament_index_cpp::get_package_share_directory("path_projection")) / "output" / "poses.json";
     // std::string joint_state_filename = "/home/carl/thesis/thesis_ws/install/reach_planner/share/reach_planner/output/joint_state.json";
     std::vector<geometry_msgs::msg::Pose> poses = poses_from_json(poses_filename);
     // std::unordered_map<std::string, double> seed_state = joint_state_from_json(joint_state_filename);

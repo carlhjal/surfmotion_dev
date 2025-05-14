@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(moveit_ros_planning_interface REQUIRED)
 find_package(trajectory_seed_generator REQUIRED)
 find_package(jsoncpp REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 add_executable(cartesian_path_node src/cartesian_path_node.cpp)
 target_include_directories(cartesian_path_node PUBLIC
@@ -24,6 +25,7 @@ ament_target_dependencies(
   rclcpp
   jsoncpp
   trajectory_seed_generator
+  ament_index_cpp
 )
 
 if(BUILD_TESTING)
