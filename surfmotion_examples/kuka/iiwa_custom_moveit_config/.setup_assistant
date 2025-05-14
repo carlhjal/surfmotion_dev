@@ -1,0 +1,27 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: iiwa_custom_description
+    relative_path: urdf/iiwa_custom.urdf.xacro
+  srdf:
+    relative_path: config/iiwa14.srdf
+  package_settings:
+    author_name: Hult
+    author_email: lovehult98@gmail.com
+    generated_timestamp: 1747248737
+  control_xacro:
+    command:
+      - position
+      - velocity
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+      - velocity
+    state:
+      - position
+      - velocity
