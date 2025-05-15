@@ -23,8 +23,6 @@
 
 using namespace std::chrono_literals;
 
-char base_link[] = "ur20_base_link";
-
 bool close_enough(
   const geometry_msgs::msg::Pose &pose, 
   const geometry_msgs::msg::Pose &goal, 
@@ -50,87 +48,87 @@ geometry_msgs::msg::Vector3 quaternionToRPY(const geometry_msgs::msg::Quaternion
     return rpy;
 }
 
-void move_with_servo2(
-  const std::vector<geometry_msgs::msg::Pose> &target_poses,
-  moveit::planning_interface::MoveGroupInterface &move_group,
-  rclcpp::Node::SharedPtr node)
-{
-  auto twist_pub = node->create_publisher<geometry_msgs::msg::TwistStamped>("/servo_node/delta_twist_cmds", 10);
-  rclcpp::Rate rate(100); // Hz
-  RCLCPP_INFO(node->get_logger(), "even made it here");
-  int pose_idx = 0;
-  double linear_speed = 0.5;
-  double angular_speed = 10; 
-  for (const auto &target: target_poses) {
-    while (rclcpp::ok()) {
-      geometry_msgs::msg::Pose current = move_group.getCurrentPose().pose;
-      // RCLCPP_INFO(node->get_logger(), "yes, i even got the pose here");
+// void move_with_servo2(
+//   const std::vector<geometry_msgs::msg::Pose> &target_poses,
+//   moveit::planning_interface::MoveGroupInterface &move_group,
+//   rclcpp::Node::SharedPtr node)
+// {
+//   auto twist_pub = node->create_publisher<geometry_msgs::msg::TwistStamped>("/servo_node/delta_twist_cmds", 10);
+//   rclcpp::Rate rate(100); // Hz
+//   RCLCPP_INFO(node->get_logger(), "even made it here");
+//   int pose_idx = 0;
+//   double linear_speed = 0.5;
+//   double angular_speed = 10; 
+//   for (const auto &target: target_poses) {
+//     while (rclcpp::ok()) {
+//       geometry_msgs::msg::Pose current = move_group.getCurrentPose().pose;
+//       // RCLCPP_INFO(node->get_logger(), "yes, i even got the pose here");
 
-      if (close_enough(current, target)) {
-        RCLCPP_INFO(node->get_logger(), "moving to pose number %d", pose_idx);
-        pose_idx++;
-        break;
-      } 
+//       if (close_enough(current, target)) {
+//         RCLCPP_INFO(node->get_logger(), "moving to pose number %d", pose_idx);
+//         pose_idx++;
+//         break;
+//       } 
 
-      geometry_msgs::msg::Vector3 dir_linear;
-      dir_linear.x = target.position.x - current.position.x;
-      dir_linear.y = target.position.y - current.position.y;
-      dir_linear.z = target.position.z - current.position.z;
+//       geometry_msgs::msg::Vector3 dir_linear;
+//       dir_linear.x = target.position.x - current.position.x;
+//       dir_linear.y = target.position.y - current.position.y;
+//       dir_linear.z = target.position.z - current.position.z;
 
-      double dist = std::sqrt(dir_linear.x*dir_linear.x + dir_linear.y*dir_linear.y + dir_linear.z*dir_linear.z);
+//       double dist = std::sqrt(dir_linear.x*dir_linear.x + dir_linear.y*dir_linear.y + dir_linear.z*dir_linear.z);
 
-      if (dist > 1e-4) {
-        dir_linear.x = (dir_linear.x / dist) * linear_speed;
-        dir_linear.y = (dir_linear.y / dist) * linear_speed;
-        dir_linear.z = (dir_linear.z / dist) * linear_speed;
-      } else {
-        dir_linear.x = 0;
-        dir_linear.y = 0;
-        dir_linear.z = 0;
-      }
+//       if (dist > 1e-4) {
+//         dir_linear.x = (dir_linear.x / dist) * linear_speed;
+//         dir_linear.y = (dir_linear.y / dist) * linear_speed;
+//         dir_linear.z = (dir_linear.z / dist) * linear_speed;
+//       } else {
+//         dir_linear.x = 0;
+//         dir_linear.y = 0;
+//         dir_linear.z = 0;
+//       }
 
-      geometry_msgs::msg::Vector3 dir_angular;
-      tf2::Quaternion q_current, q_target;
-      tf2::fromMsg(current.orientation, q_current);
-      tf2::fromMsg(target.orientation, q_target);
+//       geometry_msgs::msg::Vector3 dir_angular;
+//       tf2::Quaternion q_current, q_target;
+//       tf2::fromMsg(current.orientation, q_current);
+//       tf2::fromMsg(target.orientation, q_target);
 
-      tf2::Quaternion q_delta = q_target * q_current.inverse();
-      q_delta.normalize();
+//       tf2::Quaternion q_delta = q_target * q_current.inverse();
+//       q_delta.normalize();
 
-      // Convert to angle-axis
-      tf2::Vector3 axis = q_delta.getAxis();
-      double angle = q_delta.getAngle();
+//       // Convert to angle-axis
+//       tf2::Vector3 axis = q_delta.getAxis();
+//       double angle = q_delta.getAngle();
 
-      // If angle is small, avoid jitter
-      if (angle > 1e-3) {
-        tf2::Vector3 angular_velocity = axis.normalized() * angular_speed;
+//       // If angle is small, avoid jitter
+//       if (angle > 1e-3) {
+//         tf2::Vector3 angular_velocity = axis.normalized() * angular_speed;
 
-        dir_angular.x = angular_velocity.x();
-        dir_angular.y = angular_velocity.y();
-        dir_angular.z = angular_velocity.z();
-      } else {
-        dir_angular.x = 0;
-        dir_angular.y = 0;
-        dir_angular.z = 0;
-      }
+//         dir_angular.x = angular_velocity.x();
+//         dir_angular.y = angular_velocity.y();
+//         dir_angular.z = angular_velocity.z();
+//       } else {
+//         dir_angular.x = 0;
+//         dir_angular.y = 0;
+//         dir_angular.z = 0;
+//       }
 
-      // assemble and send away
-      geometry_msgs::msg::TwistStamped cmd;
-      cmd.header.frame_id = base_link;
-      cmd.header.stamp = node->now();
-      cmd.twist.linear = dir_linear;
-      cmd.twist.angular = dir_angular;
-      twist_pub->publish(cmd);
+//       // assemble and send away
+//       geometry_msgs::msg::TwistStamped cmd;
+//       cmd.header.frame_id = base_link;
+//       cmd.header.stamp = node->now();
+//       cmd.twist.linear = dir_linear;
+//       cmd.twist.angular = dir_angular;
+//       twist_pub->publish(cmd);
 
-      rate.sleep();
-    }
-  }
-  RCLCPP_INFO(node->get_logger(), "quittin this shit");
-  geometry_msgs::msg::TwistStamped stop;
-  stop.header.frame_id = base_link;
-  stop.header.stamp = node->now();
-  twist_pub->publish(stop);
-}
+//       rate.sleep();
+//     }
+//   }
+//   RCLCPP_INFO(node->get_logger(), "quittin this shit");
+//   geometry_msgs::msg::TwistStamped stop;
+//   stop.header.frame_id = base_link;
+//   stop.header.stamp = node->now();
+//   twist_pub->publish(stop);
+// }
 
 std::vector<geometry_msgs::msg::Pose> poses_from_json(const std::string& filename) {
   std::vector<geometry_msgs::msg::Pose> poses;
@@ -159,6 +157,8 @@ std::vector<geometry_msgs::msg::Pose> poses_from_json(const std::string& filenam
   return poses;
 }
 
+std::string base_link;
+
 struct SmoothedTwist {
   geometry_msgs::msg::Twist prev_cmd{};
   double alpha = 0.2;  // [0..1], higher = snappier, lower = smoother
@@ -185,9 +185,9 @@ void move_with_servo(
 {
   auto twist_pub = node->create_publisher<geometry_msgs::msg::TwistStamped>("/servo_node/delta_twist_cmds", 10);
   rclcpp::Rate rate(100); // Hz
-  const double max_linear_speed = 0.3;  // m/s
-  const double max_angular_speed = 1.0; // rad/s
-  const double linear_thresh = 0.5;
+  const double max_linear_speed = 0.025;  // m/s
+  const double max_angular_speed = 0.3; // rad/s
+  const double linear_thresh = 0.1;
   const double angular_thresh = 0.5;
   SmoothedTwist smoother;
   int pose_idx = 0;
@@ -243,7 +243,7 @@ void move_with_servo(
       // geometry_msgs::msg::TwistStamped
       cmd.twist = smoother.filter(cmd.twist);
       cmd.header.stamp = node->get_clock()->now();
-      cmd.header.frame_id = "ur20_base_link"; // Match your servo config
+      cmd.header.frame_id = base_link; // Match your servo config
       twist_pub->publish(cmd);
       rate.sleep();
     }
@@ -252,7 +252,7 @@ void move_with_servo(
   // Stop at the end
   geometry_msgs::msg::TwistStamped stop;
   stop.header.stamp = node->get_clock()->now();
-  stop.header.frame_id = "ur20_base_link";
+  stop.header.frame_id = base_link;
   twist_pub->publish(stop);
 }
 
@@ -282,7 +282,9 @@ int main(int argc, char ** argv)
   throw std::runtime_error("Missing required parameter: 'move_group'");
   }
   auto move_group = moveit::planning_interface::MoveGroupInterface(node, group_name);
-  
+
+  base_link = move_group.getPlanningFrame();
+
   rclcpp::sleep_for(std::chrono::milliseconds(2000));
   move_group.setPlanningPipelineId("ompl");
   move_group.setPlannerId("RRTConnectkConfigDefault");  
@@ -319,7 +321,7 @@ int main(int argc, char ** argv)
   //   return -1;
   // }
 
-  std::vector<double> seed_state = get_viable_seed_state(node, poses, "ur_arm", 100, 100, 10);
+  std::vector<double> seed_state = get_viable_seed_state(node, poses, group_name, 100, 100, 10);
   if (seed_state.empty()) {
       RCLCPP_WARN(logger,"failed generating a viable seed state");
       rclcpp::shutdown();
@@ -359,6 +361,11 @@ int main(int argc, char ** argv)
   move_group.setMaxVelocityScalingFactor(0.1);
   move_group.setMaxAccelerationScalingFactor(0.1);
   move_with_servo(poses, move_group, node);
+
+  // tell the logging node to stop logging
+  msg.data = false;
+  logging_trigger_pub_->publish(msg);
+  rclcpp::sleep_for(std::chrono::milliseconds(200));  
 
   rclcpp::shutdown();
   spinner.join();

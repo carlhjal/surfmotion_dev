@@ -9,11 +9,13 @@
     <!--JOINTS: When a joint is specified, the child link of that joint (which will always exist) is automatically included-->
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
+    <!-- The URDF lacks a link to world so in this case we add a virtual joint -->
+    <virtual_joint name="world_joint" type="fixed" parent_frame="world" child_link="base_link"/>
     <group name="fanuc_arm">
         <chain base_link="base_link" tip_link="tool_endpoint"/>
     </group>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="nozzle" parent_link="tool0" group="fanuc_arm"/>
+    <end_effector name="nozzle" parent_link="tool_endpoint" group="fanuc_arm"/>
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="base_link" link2="link_1" reason="Adjacent"/>
     <disable_collisions link1="base_link" link2="link_2" reason="Never"/>

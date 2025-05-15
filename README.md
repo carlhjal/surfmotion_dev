@@ -49,7 +49,7 @@ source .venv/bin/activate
 pip install -r src/surfmotion/requirements.txt
 ```
 
-### Running the path planning script
+## Running the path planning script
 
 Make sure you have sourced the workspace build files
 
@@ -65,7 +65,7 @@ ros2 launch path_projection path_projection.launch.py
 
 Output paths will be saved under path_projection_share/output.
 
-#### Reach analysis
+### Reach analysis
 
 In order to run reach reachability analysis, you will need to define two yamls in the path_projection package, as well as point the path_projection.launch.py launch file to them.
 

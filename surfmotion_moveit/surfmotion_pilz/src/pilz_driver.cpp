@@ -135,9 +135,9 @@ int main(int argc, char * argv[]) {
       double dz = a.position.z - b.position.z;
       return std::sqrt(dx*dx + dy*dy + dz*dz);
     };
-    for (size_t i = 0; i < poses.size(); ++i) {
-      RCLCPP_WARN(logger, "dist between points: %f", distance(poses[i], poses[i + 1]));
-    }
+    // for (size_t i = 0; i < poses.size(); ++i) {
+    //   RCLCPP_WARN(logger, "dist between points: %f", distance(poses[i], poses[i + 1]));
+    // }
 
     moveit_msgs::msg::MotionSequenceRequest seq;
     seq.items.reserve(poses.size());
@@ -153,15 +153,14 @@ int main(int argc, char * argv[]) {
         item.req.group_name  = group_name;
         item.req.planner_id  = "LIN";
         item.req.pipeline_id = "pilz_industrial_motion_planner";
-        item.req.max_velocity_scaling_factor     = 0.4;
-        item.req.max_acceleration_scaling_factor = 0.4;
+        item.req.max_velocity_scaling_factor     = 0.07;
+        item.req.max_acceleration_scaling_factor = 0.07;
 
         item.req.goal_constraints.emplace_back(kinematic_constraints::constructGoalConstraints(tool_link, ps));
 
-        if (i > 0 && i + 1 < poses.size()) {
-            item.blend_radius = distance(poses[i], poses[i + 1]) / 4;  
-        } else {
-            item.blend_radius = 0.0;
+        item.blend_radius = 0.0;
+        if (i > 0 && i + 1 < poses.size() - 1) {
+            item.blend_radius = distance(poses[i], poses[i + 1]) / 4.0;
         }
 
         seq.items.emplace_back(item);
@@ -194,6 +193,10 @@ int main(int argc, char * argv[]) {
     else
       RCLCPP_ERROR(logger, "sequence failed");
     
+    msg.data = false;
+    logging_trigger_pub_->publish(msg);
+    rclcpp::sleep_for(std::chrono::milliseconds(200));  
+
     rclcpp::shutdown();
     spinner.join();
     return 0;

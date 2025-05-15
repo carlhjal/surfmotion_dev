@@ -61,7 +61,8 @@ def launch_setup(context):
             PythonLaunchDescriptionSource(
                 str(moveit_config.package_path / "launch/rsp.launch.py")
             ),
-            launch_arguments={"publish_frequency": "100.0"}.items(),
+            # to get 100 hz tf messages
+            launch_arguments={"publish_frequency": "400.0"}.items(),
         )
     )
     

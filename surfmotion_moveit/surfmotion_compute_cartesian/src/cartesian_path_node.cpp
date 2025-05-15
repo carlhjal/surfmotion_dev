@@ -15,6 +15,7 @@
 #include "trajectory_seed_generator/seed_gen.hpp"
 #include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"
+#include "std_msgs/msg/bool.hpp"
 
 std::vector<geometry_msgs::msg::Pose> poses_from_json(const std::string& filename) {
     std::vector<geometry_msgs::msg::Pose> poses;
@@ -76,6 +77,8 @@ int main(int argc, char * argv[]) {
     rclcpp::executors::SingleThreadedExecutor executor;
     
     executor.add_node(node);
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr logging_trigger_pub_;
+    logging_trigger_pub_ = node->create_publisher<std_msgs::msg::Bool>("/start_logging", 10);
     auto spinner = std::thread([&executor]() { executor.spin(); });
     auto group_name = node->declare_parameter<std::string>("move_group", "");
     if (group_name.empty()) {
@@ -89,8 +92,9 @@ int main(int argc, char * argv[]) {
     move_group_interface.setMaxVelocityScalingFactor(0.8);
     move_group_interface.setMaxAccelerationScalingFactor(0.8);
 
-    // get a working seed state and set it
-    std::vector<double> seed_state = get_viable_seed_state(node, poses, group_name, 100, 100, 10);
+    // Get a working seed state and set it
+    // It is recommended to make the step size large for faster execution time
+    std::vector<double> seed_state = get_viable_seed_state(node, poses, group_name, 1, 100, 10);
     if (seed_state.empty()) {
         RCLCPP_WARN(logger,"failed generating a viable seed state");
         rclcpp::shutdown();
@@ -110,24 +114,28 @@ int main(int argc, char * argv[]) {
         return -1;
     }
 
-
     move_group_interface.setMaxVelocityScalingFactor(0.1);
     move_group_interface.setMaxAccelerationScalingFactor(0.1);
     const double jump_threshold = 0.0;
-    const double eef_step = 0.02;
+    const double eef_step = 0.005;
 
-    // for (double eef_step = 0.001; eef_step < 0.2; eef_step = eef_step+0.001) {
-      // for (double jump_threshold = 0.0; jump_threshold < 0.1; jump_threshold = jump_threshold+0.01) {
-    
     moveit_msgs::msg::RobotTrajectory trajectory;
     double fraction = move_group_interface.computeCartesianPath(poses, eef_step, trajectory, true);
     RCLCPP_INFO(logger, "Visualizing Cartesian path plan (%.2f%% achieved), eef_step: %f", fraction * 100.0, eef_step);
 
     if(fraction == 1){
+        auto msg = std_msgs::msg::Bool();
+        msg.data = true;
+        logging_trigger_pub_->publish(msg);
+        rclcpp::sleep_for(std::chrono::milliseconds(200));
         move_group_interface.execute(trajectory);
     }
 
-    
+    auto msg = std_msgs::msg::Bool();
+    msg.data = false;
+    logging_trigger_pub_->publish(msg);
+    rclcpp::sleep_for(std::chrono::milliseconds(200));
+
     rclcpp::shutdown();
     spinner.join();
     return 0;

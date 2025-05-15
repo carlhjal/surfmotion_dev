@@ -12,6 +12,7 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def load_yaml(file_path):
+    print(f"Attempting to load YAML from: {file_path}")
     try:
         with open(file_path, "r") as file:
             return yaml.safe_load(file)
@@ -35,22 +36,26 @@ def shutdown_if_done(event):
         return [EmitEvent(event=Shutdown())]
 
 
-def launch_setup(context, *args, **kwargs):
+def launch_setup(context):
     use_config_yaml = True
     autoclose = False
 
-    config_file_path = LaunchConfiguration('config_file').perform(context)
-    config = load_yaml(config_file_path)
+    # Get the resolved path to the meta config YAML
+    config_file = LaunchConfiguration("config_file").perform(context)
+    package_path = get_package_share_directory("path_projection")
+    meta_config_path = os.path.join(package_path, "config", config_file)
+    print(meta_config_path)
+    config = load_yaml(meta_config_path)
 
     if config is None:
         return []
 
-    package_path = get_package_share_directory("reach_planner")
+    package_path = get_package_share_directory("path_projection")
     reach_ros_path = get_package_share_directory("reach_ros")
-    reach_custom_setup_path = get_package_share_directory("reach_config")
+    reach_custom_setup_path = get_package_share_directory("path_projection")
 
-    setup_launch_file = os.path.join(reach_custom_setup_path, "launch", "setup.launch.py")
-    start_launch_file = os.path.join(reach_ros_path, "launch", "start.launch.py")
+    setup_launch_file = os.path.join(reach_custom_setup_path, "launch", "setup_reach.launch.py")
+    start_launch_file = os.path.join(reach_ros_path, "launch", "start_reach.launch.py")
 
     results_dir = os.path.join(package_path, "output", "results")
     if os.path.exists(results_dir):
@@ -77,15 +82,15 @@ def launch_setup(context, *args, **kwargs):
         config_file = get_package_file(config["config_file"])
         config_name = config["config_name"]
         results_dir = get_package_file(config["results_dir"])
-    else:
+    # else:
         # fallback hardcoded paths
-        robot_description_file = os.path.join(get_package_share_directory("ur_custom_description"), "urdf", "custom_ur_rotated.urdf.xacro")
-        robot_description_semantic_file = os.path.join(get_package_share_directory("ur_custom_moveit_config"), "config", "custom_ur.srdf")
-        robot_description_kinematics_file = os.path.join(get_package_share_directory("ur_custom_moveit_config"), "config", "kinematics.yaml")
-        robot_description_joint_limits_file = os.path.join(get_package_share_directory("ur_custom_moveit_config"), "config", "joint_limits.yaml")
-        config_file = os.path.join(package_path, "config", "reach_config.yaml")
-        config_name = "test"
-        results_dir = os.path.join(package_path, "output", "results")
+        # robot_description_file = os.path.join(get_package_share_directory("ur_custom_description"), "urdf", "custom_ur_rotated.urdf.xacro")
+        # robot_description_semantic_file = os.path.join(get_package_share_directory("ur_custom_moveit_config"), "config", "custom_ur.srdf")
+        # robot_description_kinematics_file = os.path.join(get_package_share_directory("ur_custom_moveit_config"), "config", "kinematics.yaml")
+        # robot_description_joint_limits_file = os.path.join(get_package_share_directory("ur_custom_moveit_config"), "config", "joint_limits.yaml")
+        # config_file = os.path.join(package_path, "config", "reach_config.yaml")
+        # config_name = "test"
+        # results_dir = os.path.join(package_path, "output", "results")
 
     setup_launch = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(setup_launch_file),
@@ -132,7 +137,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'config_file',
-            default_value=os.path.join(get_package_share_directory('reach_planner'), 'config', 'config_ur5.yaml'),
+            default_value="config_kuka.yaml",
             description='Path to the configuration YAML file'
         ),
         OpaqueFunction(function=launch_setup)

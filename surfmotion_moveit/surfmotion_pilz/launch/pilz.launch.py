@@ -36,7 +36,7 @@ def launch_setup(context):
 
     return [
         Node(
-            package="pilz_planner",
+            package="surfmotion_pilz",
             executable="pilz_driver",
             name="pilz_driver",
             output="screen",

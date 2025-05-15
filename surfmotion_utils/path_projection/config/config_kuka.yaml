@@ -1,0 +1,30 @@
+# reach needs some information about the robot
+robot_description_file: 
+  package: "iiwa_custom_description"
+  file: "urdf/iiwa_custom.urdf.xacro"
+robot_description_semantic_file: 
+  package: "iiwa_custom_moveit_config"
+  file: "config/iiwa14.srdf"
+robot_description_kinematics_file:
+  package: "iiwa_custom_moveit_config"
+  file: config/kinematics.yaml
+robot_description_joint_limits_file:
+  package: "iiwa_custom_moveit_config"
+  file: "config/joint_limits.yaml"
+config_file: 
+  package: "path_projection"
+  file: "config/reach_config_kuka.yaml"
+results_dir:
+  package: "path_projection"
+  file: "output/results"
+pointcloud:
+  package: "path_projection"
+  file: "output/test_output.pcd"
+config_name: "kuka"
+
+# Specifying the base link name of the robot model is used for creating a virtual joint between world and robot_base_frame
+# Don't use this if you already know what you're doing 
+robot_base_frame: "base_link"
+robot_pose: 
+  translation: [0.0, 0.0, 0.0]
+  rotation_rpy: [0.0, 0.0, 0.0]

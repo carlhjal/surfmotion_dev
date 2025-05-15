@@ -13,7 +13,7 @@ from launch import LaunchDescription
 from ament_index_python.packages import get_package_share_directory
 
 parameters = [
-  {'name': 'config', 'description':'Path to the configuration yaml', 'default': os.path.join(get_package_share_directory('path_projection'), 'config', 'config_ur5.yaml')},
+  {'name': 'config', 'description':'Path to the configuration yaml', 'default': os.path.join(get_package_share_directory('path_projection'), 'config', 'config_ur20.yaml')},
 ]
 
 # def declare_launch_arguments():

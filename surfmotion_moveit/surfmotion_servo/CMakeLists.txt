@@ -38,7 +38,7 @@ target_link_libraries(servo_controller
 install(TARGETS servo_controller
   DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY config launch
+install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 

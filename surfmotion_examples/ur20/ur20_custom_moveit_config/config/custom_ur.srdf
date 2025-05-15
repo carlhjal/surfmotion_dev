@@ -22,7 +22,7 @@
         <joint name="ur20_wrist_3_joint" value="0"/>
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="nozzle" parent_link="ur20_tool0" group="ur_arm"/>
+    <end_effector name="nozzle" parent_link="tool_endpoint" group="ur_arm"/>
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="ur20_base_link_inertia" link2="ur20_shoulder_link" reason="Adjacent"/>
     <disable_collisions link1="ur20_base_link_inertia" link2="ur20_upper_arm_link" reason="Never"/>

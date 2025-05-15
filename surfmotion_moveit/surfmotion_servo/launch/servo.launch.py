@@ -36,7 +36,7 @@ def launch_setup(context):
 
     return [
         Node(
-            package="moveit_servo_example",
+            package="surfmotion_servo",
             executable="servo_controller",
             name="servo_controller",
             output="screen",
@@ -58,7 +58,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             "meta_config_name",
-            default_value="ur20_meta.yaml",
+            default_value="fanuc_meta.yaml",
             description="Name of meta info YAML"
         ),
         OpaqueFunction(function=launch_setup)

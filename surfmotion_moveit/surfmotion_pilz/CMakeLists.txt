@@ -32,7 +32,7 @@ ament_target_dependencies(
 install(TARGETS pilz_driver
   DESTINATION lib/${PROJECT_NAME})
 
-install(DIRECTORY config launch
+install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
 

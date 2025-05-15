@@ -70,7 +70,7 @@ def save_poses(pcd: o3d.geometry.PointCloud):
         }
         quaternion = normal_to_quaternion(normals[i])
         np_pos = np.array([position["x"], position["y"], position["z"]])
-        quaternion = normal_and_twist_to_quaternion(normals[i], np_pos, centroid, tool_rotation=90)
+        quaternion = normal_and_twist_to_quaternion(normals[i], np_pos, centroid, tool_rotation=180)
         orientation = {
             "x": quaternion[1],
             "y": quaternion[2],
@@ -81,7 +81,7 @@ def save_poses(pcd: o3d.geometry.PointCloud):
     json_path = os.path.join(output_dir, "poses.json")
     with open(json_path, "w") as f:
         json.dump(poses, f, indent=4)
-        
+
     print(f"Saved the path successfully at: {json_path}")
         
 
@@ -96,7 +96,7 @@ def run_reach_study():
         subprocess.run(["ros2",
                         "launch",
                         package_name,
-                        "reach_analysis.launch.py"
+                        "reach_analysis2.launch.py"
                         ])
     except:
         print(f"Error launch reach_analysis")
@@ -181,7 +181,7 @@ class App:
         self.mat_selection.base_color = ([1, 0, 0, 0.5])
 
         params = {
-            "radius": 0.15,
+            "radius": 0.05,
             "z_offset": 0.0,
             "y_offset": 0.0
         }
