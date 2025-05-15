@@ -13,7 +13,7 @@ from launch import LaunchDescription
 from ament_index_python.packages import get_package_share_directory
 
 parameters = [
-  {'name': 'config', 'description':'Path to the configuration yaml', 'default': os.path.join(get_package_share_directory('reach_planner'), 'config', 'config_ur5.yaml')},
+  {'name': 'config', 'description':'Path to the configuration yaml', 'default': os.path.join(get_package_share_directory('path_projection'), 'config', 'config_ur5.yaml')},
 ]
 
 # def declare_launch_arguments():
@@ -46,16 +46,16 @@ def generate_launch_description():
     config_test = LaunchConfiguration("config")
     print(config_test)
 
-    package_name = "reach_planner"
+    package_name = "path_projection"
     package_path = get_package_share_directory(package_name)
 
     reach_ros_package_name = "reach_ros"
     reach_ros_path = get_package_share_directory(reach_ros_package_name)
     
-    reach_custom_setup_path = get_package_share_directory("reach_config")
+    reach_custom_setup_path = get_package_share_directory("path_projection")
 
-    setup_launch_file = os.path.join(reach_custom_setup_path, "launch", "setup.launch.py")
-    start_launch_file = os.path.join(reach_ros_path, "launch", "start.launch.py")
+    setup_launch_file = os.path.join(reach_custom_setup_path, "launch", "setup_reach.launch.py")
+    start_launch_file = os.path.join(reach_ros_path, "launch", "start_reach.launch.py")
 
     results_dir = os.path.join(package_path, "output", "results")
 

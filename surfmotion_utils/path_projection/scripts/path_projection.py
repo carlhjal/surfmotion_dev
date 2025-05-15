@@ -82,6 +82,8 @@ def save_poses(pcd: o3d.geometry.PointCloud):
     with open(json_path, "w") as f:
         json.dump(poses, f, indent=4)
         
+    print(f"Saved the path successfully at: {json_path}")
+        
 
 def save_trajectory(pcd: o3d.geometry.PointCloud):
     output_path = os.path.join(output_dir, "test_output.pcd")
@@ -256,7 +258,8 @@ class App:
         self.buttons = [
             self.make_button("Run high-def analysis", self.on_high_def_analysis),
             self.make_button("Run Reach study", self.on_run_reach_study),
-            self.make_button("Toggle cutting/welding mode", self.on_toggle_mode)
+            self.make_button("Toggle cutting/welding mode", self.on_toggle_mode),
+            self.make_button("Save path", self.on_save_path)
         ]
 
         self.welding_mode = False
@@ -287,6 +290,10 @@ class App:
         self.panel.add_child(button)
         return button
     
+    def on_save_path(self):
+        save_poses(self.proj_circle)
+
+
     def on_high_def_analysis(self):
         self.slow_update_fov(self.pcd)
         self.project_on_surface(self.visible_hd)
