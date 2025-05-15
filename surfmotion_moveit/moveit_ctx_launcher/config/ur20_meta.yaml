@@ -1,3 +1,4 @@
 moveit_config_package: "ur20_custom_moveit_config"
 moveit_config_name: "custom_ur"
+move_group_name: "ur_arm"
 launch_servo: false

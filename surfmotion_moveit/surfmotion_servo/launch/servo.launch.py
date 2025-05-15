@@ -19,7 +19,7 @@ def load_yaml(file_path):
 def launch_setup(context):
     # Get the resolved path to the meta config YAML
     meta_config_rel = LaunchConfiguration("meta_config_name").perform(context)
-    package_path = get_package_share_directory("moveit_servo_example")
+    package_path = get_package_share_directory("moveit_ctx_launcher")
     meta_config_path = os.path.join(package_path, "config", meta_config_rel)
     print(meta_config_path)
 
@@ -46,6 +46,9 @@ def launch_setup(context):
                     'publish_planning_scene':   False,
                     'publish_state_updates':    False,
                     'publish_geometry_updates': False,
+                },
+                { # And manually pass this parameter
+                    "move_group": meta["move_group_name"]
                 }
             ]
         )

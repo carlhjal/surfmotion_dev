@@ -68,10 +68,8 @@ using namespace std::chrono_literals;
 
 int main(int argc, char * argv[]) { 
     std::string poses_filename = std::filesystem::path(ament_index_cpp::get_package_share_directory("path_projection")) / "output" / "poses.json";
-    // std::string joint_state_filename = "/home/carl/thesis/thesis_ws/install/reach_planner/share/reach_planner/output/joint_state.json";
     std::vector<geometry_msgs::msg::Pose> poses = poses_from_json(poses_filename);
-    // std::unordered_map<std::string, double> seed_state = joint_state_from_json(joint_state_filename);
-
+    
     rclcpp::init(argc, argv);
     auto const node = std::make_shared<rclcpp::Node>("cartesian_path", rclcpp::NodeOptions());
     auto const logger = node->get_logger();
@@ -79,49 +77,20 @@ int main(int argc, char * argv[]) {
     
     executor.add_node(node);
     auto spinner = std::thread([&executor]() { executor.spin(); });
-    auto move_group_interface = moveit::planning_interface::MoveGroupInterface(node, "ur_arm");
-
+    auto group_name = node->declare_parameter<std::string>("move_group", "");
+    if (group_name.empty()) {
+    throw std::runtime_error("Missing required parameter: 'move_group'");
+    }
+    auto move_group_interface = moveit::planning_interface::MoveGroupInterface(node, group_name);
+    
     move_group_interface.setPlanningPipelineId("ompl");
     move_group_interface.setPlannerId("RRTConnectkConfigDefault");  
     move_group_interface.setPlanningTime(15.0);
     move_group_interface.setMaxVelocityScalingFactor(0.8);
     move_group_interface.setMaxAccelerationScalingFactor(0.8);
 
-//   std::vector<double> joint_positions;
-//   for (const auto& joint_name : move_group_interface.getJointNames()) {
-//     joint_positions.push_back(seed_state[joint_name]);
-//   }
-
-    // set a seed state, hope that it works?
-    // geometry_msgs::msg::PoseStamped target_pose;
-    // target_pose.header.frame_id = "ur20_base_link";
-    // target_pose.pose.position.x = poses[0].position.x;
-    // target_pose.pose.position.y = poses[0].position.y;
-    // target_pose.pose.position.z = poses[0].position.z;
-    // target_pose.pose.orientation.x = poses[0].orientation.x;
-    // target_pose.pose.orientation.y = poses[0].orientation.y;
-    // target_pose.pose.orientation.z = poses[0].orientation.z;
-    // target_pose.pose.orientation.w = poses[0].orientation.w;
-    // move_group_interface.setPoseTarget(target_pose);
-    // auto const [success, plan] = [&move_group_interface] {
-    //   moveit::planning_interface::MoveGroupInterface::Plan msg;
-    //   auto const ok = static_cast<bool>(move_group_interface.plan(msg));
-    //   return std::make_pair(ok, msg);
-    // }();
-    // if (success)
-    // {
-    //   RCLCPP_INFO(logger, "Planning successful! Executing plan...");
-    //   move_group_interface.execute(plan);
-    // }
-    // else
-    // {
-    //   RCLCPP_ERROR(logger, "Planning failed!");
-    //   rclcpp::shutdown();
-    //   return -1;
-    // }
-
     // get a working seed state and set it
-    std::vector<double> seed_state = get_viable_seed_state(node, poses, "ur_arm", 100, 100, 10);
+    std::vector<double> seed_state = get_viable_seed_state(node, poses, group_name, 100, 100, 10);
     if (seed_state.empty()) {
         RCLCPP_WARN(logger,"failed generating a viable seed state");
         rclcpp::shutdown();

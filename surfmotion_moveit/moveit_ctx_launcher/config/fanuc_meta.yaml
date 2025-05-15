@@ -1,3 +1,4 @@
 moveit_config_package: "fanuc_custom_moveit_config"
 moveit_config_name: "fanuc"
+move_group_name: "fanuc_arm"
 launch_servo: true

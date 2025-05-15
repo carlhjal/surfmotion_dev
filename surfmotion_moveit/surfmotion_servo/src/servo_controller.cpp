@@ -277,7 +277,12 @@ int main(int argc, char ** argv)
   executor.add_node(node);
   auto spinner = std::thread([&executor]() { executor.spin(); });
 
-  moveit::planning_interface::MoveGroupInterface move_group(node, "ur_arm");
+  auto group_name = node->declare_parameter<std::string>("move_group", "");
+  if (group_name.empty()) {
+  throw std::runtime_error("Missing required parameter: 'move_group'");
+  }
+  auto move_group = moveit::planning_interface::MoveGroupInterface(node, group_name);
+  
   rclcpp::sleep_for(std::chrono::milliseconds(2000));
   move_group.setPlanningPipelineId("ompl");
   move_group.setPlannerId("RRTConnectkConfigDefault");  

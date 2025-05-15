@@ -78,6 +78,7 @@ An optional parameter pointing to a meta-info yaml in the form of:
 ```yaml
 moveit_config_package: "ur20_custom_moveit_config"
 moveit_config_name: "custom_ur"
+move_group_name: "ur_arm"
 launch_servo: false
 ```
 
@@ -96,7 +97,7 @@ ros2 launch surfmotion_servo servo.launch.py
 ros2 launch surfmotion_pilz pilz.launch.py
 ```
 
-The meta information yaml follows the same structure.
+The meta information yaml is expected to be located in the moveit_ctx_launcher package.
 
 ### Servo notes
 

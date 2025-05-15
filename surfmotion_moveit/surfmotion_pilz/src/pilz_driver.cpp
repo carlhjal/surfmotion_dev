@@ -85,7 +85,11 @@ int main(int argc, char * argv[]) {
     logging_trigger_pub_ = node->create_publisher<std_msgs::msg::Bool>("/start_logging", 10);
     executor.add_node(node);
     auto spinner = std::thread([&executor]() { executor.spin(); });
-    auto move_group = moveit::planning_interface::MoveGroupInterface(node, "ur_arm");
+    auto group_name = node->declare_parameter<std::string>("move_group", "");
+    if (group_name.empty()) {
+    throw std::runtime_error("Missing required parameter: 'move_group'");
+    }
+    auto move_group = moveit::planning_interface::MoveGroupInterface(node, group_name);
 
     move_group.setPlanningPipelineId("ompl");
     move_group.setPlannerId("RRTConnectkConfigDefault");  
@@ -94,7 +98,7 @@ int main(int argc, char * argv[]) {
     move_group.setMaxAccelerationScalingFactor(0.8);
 
     // get a working seed state and set it
-    std::vector<double> seed_state = get_viable_seed_state(node, poses, "ur_arm", 100, 100, 10);
+    std::vector<double> seed_state = get_viable_seed_state(node, poses, group_name, 100, 100, 10);
     if (seed_state.empty()) {
         RCLCPP_WARN(logger,"failed generating a viable seed state");
         rclcpp::shutdown();
@@ -146,7 +150,7 @@ int main(int argc, char * argv[]) {
         ps.pose            = poses[i];
         
         moveit_msgs::msg::MotionSequenceItem item;
-        item.req.group_name  = "ur_arm";
+        item.req.group_name  = group_name;
         item.req.planner_id  = "LIN";
         item.req.pipeline_id = "pilz_industrial_motion_planner";
         item.req.max_velocity_scaling_factor     = 0.4;
