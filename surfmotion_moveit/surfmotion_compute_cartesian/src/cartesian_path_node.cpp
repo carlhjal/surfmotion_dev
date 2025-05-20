@@ -11,7 +11,6 @@
 #include <vector>
 #include <jsoncpp/json/json.h>
 #include "geometry_msgs/msg/pose.hpp"
-#include "moveit/move_group_interface/move_group_interface.h"
 #include "trajectory_seed_generator/seed_gen.hpp"
 #include <filesystem>
 #include "ament_index_cpp/get_package_share_directory.hpp"

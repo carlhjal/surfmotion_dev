@@ -5,7 +5,7 @@
 #include <moveit/robot_model_loader/robot_model_loader.hpp>
 #include <moveit/robot_state/cartesian_interpolator.hpp>
 #include <moveit/robot_state/robot_state.hpp>
-#include <moveit/collision_detection/collision_common.hpp>   // JumpThreshold / MaxEEFStep
+#include <moveit/collision_detection/collision_common.hpp>
 #include <moveit/moveit_cpp/moveit_cpp.hpp>
 #include <moveit/planning_scene_monitor/planning_scene_monitor.hpp>
 
@@ -46,7 +46,7 @@ std::vector<double> get_viable_seed_state(
     RCLCPP_ERROR(node->get_logger(),
                 "The kinematics plugin for group '%s' did not load.",
                 group_name.c_str());
-    return {};        // calling setFromIK() would seg‑fault
+    return {}; // calling setFromIK() would seg‑fault
     }
     auto is_valid_quat = [](const geometry_msgs::msg::Quaternion& q) {
     return std::abs(q.w*q.w + q.x*q.x + q.y*q.y + q.z*q.z - 1.0) < 1e-3;
@@ -58,20 +58,14 @@ std::vector<double> get_viable_seed_state(
     return {};
     }
     
-    // node->declare_parameter(
-    // "robot_description_kinematics.ur_arm.kinematics_solver",
-    // "kdl_kinematics_plugin/KDLKinematicsPlugin");
-    
     const auto &target_pose = waypoints[0];
     for (size_t i = 0; i < num_trials; i++) {
         moveit::core::RobotState state(model);
         state.setToRandomPositions(joint_model_group);
-        RCLCPP_WARN(node->get_logger(),"YES THIS WORKED");
         if (!state.setFromIK(joint_model_group, target_pose, ik_timeout))  {
                 RCLCPP_WARN(node->get_logger(),"setfromik failed");
             continue;
         }
-        RCLCPP_WARN(node->get_logger(),"the fuk");
 
         
         if (scene->isStateColliding(state, group_name)) {

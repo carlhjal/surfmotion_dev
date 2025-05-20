@@ -9,7 +9,6 @@
  * 
  */
 
-#include "moveit_msgs/msg/robot_trajectory.hpp"
 #include <moveit/kinematics_base/kinematics_base.hpp>
 #include <moveit/move_group_interface/move_group_interface.hpp>
 #include <moveit/planning_scene/planning_scene.hpp>

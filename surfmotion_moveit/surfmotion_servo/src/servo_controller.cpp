@@ -48,88 +48,6 @@ geometry_msgs::msg::Vector3 quaternionToRPY(const geometry_msgs::msg::Quaternion
     return rpy;
 }
 
-// void move_with_servo2(
-//   const std::vector<geometry_msgs::msg::Pose> &target_poses,
-//   moveit::planning_interface::MoveGroupInterface &move_group,
-//   rclcpp::Node::SharedPtr node)
-// {
-//   auto twist_pub = node->create_publisher<geometry_msgs::msg::TwistStamped>("/servo_node/delta_twist_cmds", 10);
-//   rclcpp::Rate rate(100); // Hz
-//   RCLCPP_INFO(node->get_logger(), "even made it here");
-//   int pose_idx = 0;
-//   double linear_speed = 0.5;
-//   double angular_speed = 10; 
-//   for (const auto &target: target_poses) {
-//     while (rclcpp::ok()) {
-//       geometry_msgs::msg::Pose current = move_group.getCurrentPose().pose;
-//       // RCLCPP_INFO(node->get_logger(), "yes, i even got the pose here");
-
-//       if (close_enough(current, target)) {
-//         RCLCPP_INFO(node->get_logger(), "moving to pose number %d", pose_idx);
-//         pose_idx++;
-//         break;
-//       } 
-
-//       geometry_msgs::msg::Vector3 dir_linear;
-//       dir_linear.x = target.position.x - current.position.x;
-//       dir_linear.y = target.position.y - current.position.y;
-//       dir_linear.z = target.position.z - current.position.z;
-
-//       double dist = std::sqrt(dir_linear.x*dir_linear.x + dir_linear.y*dir_linear.y + dir_linear.z*dir_linear.z);
-
-//       if (dist > 1e-4) {
-//         dir_linear.x = (dir_linear.x / dist) * linear_speed;
-//         dir_linear.y = (dir_linear.y / dist) * linear_speed;
-//         dir_linear.z = (dir_linear.z / dist) * linear_speed;
-//       } else {
-//         dir_linear.x = 0;
-//         dir_linear.y = 0;
-//         dir_linear.z = 0;
-//       }
-
-//       geometry_msgs::msg::Vector3 dir_angular;
-//       tf2::Quaternion q_current, q_target;
-//       tf2::fromMsg(current.orientation, q_current);
-//       tf2::fromMsg(target.orientation, q_target);
-
-//       tf2::Quaternion q_delta = q_target * q_current.inverse();
-//       q_delta.normalize();
-
-//       // Convert to angle-axis
-//       tf2::Vector3 axis = q_delta.getAxis();
-//       double angle = q_delta.getAngle();
-
-//       // If angle is small, avoid jitter
-//       if (angle > 1e-3) {
-//         tf2::Vector3 angular_velocity = axis.normalized() * angular_speed;
-
-//         dir_angular.x = angular_velocity.x();
-//         dir_angular.y = angular_velocity.y();
-//         dir_angular.z = angular_velocity.z();
-//       } else {
-//         dir_angular.x = 0;
-//         dir_angular.y = 0;
-//         dir_angular.z = 0;
-//       }
-
-//       // assemble and send away
-//       geometry_msgs::msg::TwistStamped cmd;
-//       cmd.header.frame_id = base_link;
-//       cmd.header.stamp = node->now();
-//       cmd.twist.linear = dir_linear;
-//       cmd.twist.angular = dir_angular;
-//       twist_pub->publish(cmd);
-
-//       rate.sleep();
-//     }
-//   }
-//   RCLCPP_INFO(node->get_logger(), "quittin this shit");
-//   geometry_msgs::msg::TwistStamped stop;
-//   stop.header.frame_id = base_link;
-//   stop.header.stamp = node->now();
-//   twist_pub->publish(stop);
-// }
-
 std::vector<geometry_msgs::msg::Pose> poses_from_json(const std::string& filename) {
   std::vector<geometry_msgs::msg::Pose> poses;
   std::ifstream file(filename, std::ifstream::binary);
@@ -195,13 +113,11 @@ void move_with_servo(
     while (rclcpp::ok()) {
       geometry_msgs::msg::Pose current = move_group.getCurrentPose().pose;
 
-      // Compute position distance
       double dx = target.position.x - current.position.x;
       double dy = target.position.y - current.position.y;
       double dz = target.position.z - current.position.z;
       double dist = std::sqrt(dx * dx + dy * dy + dz * dz);
 
-      // Compute angular distance
       tf2::Quaternion q1, q2;
       tf2::fromMsg(current.orientation, q1);
       tf2::fromMsg(target.orientation, q2);
@@ -239,6 +155,7 @@ void move_with_servo(
         cmd.twist.angular.z = omega.z();
       }
       RCLCPP_INFO(node->get_logger(), "Angular cmd: %.2f %.2f %.2f", cmd.twist.angular.x, cmd.twist.angular.y, cmd.twist.angular.z);
+      // Low pass filter in case..
       // geometry_msgs::msg::Twist smoothed = smoother.filter(cmd.twist);
       // geometry_msgs::msg::TwistStamped
       cmd.twist = smoother.filter(cmd.twist);
@@ -266,9 +183,7 @@ int main(int argc, char ** argv)
   rclcpp::NodeOptions options;
   options.parameter_overrides({rclcpp::Parameter("use_sim_time", false)});
   auto node = std::make_shared<rclcpp::Node>("servo_controller", options);
-  // auto const node = std::make_shared<rclcpp::Node>("servo_controller");
-  // node->declare_parameter("use_sim_time", false);  // Declare use_sim_time as a parameter
-  // node->set_parameter(rclcpp::Parameter("use_sim_time", true));
+
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr logging_trigger_pub_;
   logging_trigger_pub_ = node->create_publisher<std_msgs::msg::Bool>("/start_logging", 10);
   bool use_sim_time = node->get_parameter("use_sim_time").as_bool();
@@ -291,35 +206,6 @@ int main(int argc, char ** argv)
   move_group.setPlanningTime(15.0);
   move_group.setMaxVelocityScalingFactor(0.8);
   move_group.setMaxAccelerationScalingFactor(0.8);
-  // move_group.asyncMove()
-  
-  // Move the robot to the first pose
-  // geometry_msgs::msg::PoseStamped target_pose;
-  // target_pose.header.frame_id = "ur20_base_link";
-  // target_pose.pose.position.x = poses[0].position.x;
-  // target_pose.pose.position.y = poses[0].position.y;
-  // target_pose.pose.position.z = poses[0].position.z;
-  // target_pose.pose.orientation.x = poses[0].orientation.x;
-  // target_pose.pose.orientation.y = poses[0].orientation.y;
-  // target_pose.pose.orientation.z = poses[0].orientation.z;
-  // target_pose.pose.orientation.w = poses[0].orientation.w;
-  // move_group.setPoseTarget(target_pose);
-  // auto const [success, plan] = [&move_group] {
-  //   moveit::planning_interface::MoveGroupInterface::Plan msg;
-  //   auto const ok = static_cast<bool>(move_group.plan(msg));
-  //   return std::make_pair(ok, msg);
-  // }();
-  // if (success)
-  // {
-  //   RCLCPP_INFO(logger, "Planning successful! Executing plan...");
-  //   move_group.execute(plan);
-  // }
-  // else
-  // {
-  //   RCLCPP_ERROR(logger, "Planning failed!");
-  //   rclcpp::shutdown();
-  //   return -1;
-  // }
 
   std::vector<double> seed_state = get_viable_seed_state(node, poses, group_name, 100, 100, 10);
   if (seed_state.empty()) {
