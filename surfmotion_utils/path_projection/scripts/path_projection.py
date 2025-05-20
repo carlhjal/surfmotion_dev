@@ -27,7 +27,7 @@ def normal_and_twist_to_quaternion(normal, position, centroid, tool_rotation=90)
     radial_proj = radial - np.dot(radial, z) * z
     
     if np.linalg.norm(radial_proj) < 1e-6:
-        # fallback if radial vector is aligned with Z
+        # fallback if radial vector is somehow aligned with Z
         x = np.array([1, 0, 0])
     else:
         x = radial_proj / np.linalg.norm(radial_proj)
@@ -181,14 +181,15 @@ class App:
         self.mat_selection.base_color = ([1, 0, 0, 0.5])
 
         params = {
-            "radius": 0.05,
+            "radius": 0.2,
             "z_offset": 0.0,
             "y_offset": 0.0
         }
+
         self.circle = o3d.geometry.PointCloud()
         self.circle.points = o3d.utility.Vector3dVector(generate_circle(**params))
-        self.circle.paint_uniform_color([1, 0, 0])  # red
-        self.circle_transform = np.eye(4)  # initial transform
+        self.circle.paint_uniform_color([1, 0, 0])
+        self.circle_transform = np.eye(4)
 
         self.trajectory_type = TrajectoryType.CIRCLE
 
@@ -416,11 +417,6 @@ class App:
         tree = KDTree(pcl_2d)
         dists, idx = tree.query(circle_2d, distance_upper_bound=0.02)
         
-            # mask = dists < 0.02
-            # inverted_mask = dists > 0.02
-            # filtered_dists = dists[mask]
-            # filtered_idx = idx[mask]
-
         valid_mask = np.isfinite(dists)
         valid_idx = idx[valid_mask]
 
